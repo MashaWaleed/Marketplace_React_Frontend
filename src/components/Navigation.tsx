@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Flex, Button, Link as ChakraLink, Spacer } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';

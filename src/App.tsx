@@ -10,7 +10,7 @@ const Signup = React.lazy(() => import('./pages/Signup'));
 const Home = React.lazy(() => import('./pages/Home'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const ProductDetails = React.lazy(() => import('./pages/ProductDetails'));
-const Wallet = React.lazy(() => import('./pages/Wallet'));
+const Wallet = React.lazy(() => import('./pages/Wallet').then(module => ({ default: module.default })));
 
 const queryClient = new QueryClient();
 

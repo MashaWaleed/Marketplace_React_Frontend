@@ -19,31 +19,34 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { walletAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import type { Wallet, Transaction } from '../types/api';
-import type { AxiosResponse } from 'axios';
+import { Wallet as WalletType, Transaction } from '../types/api';
 
-export default function Wallet() {
-  const [amount, setAmount] = useState('');
+interface ApiResponse<T> {
+  data: T;
+}
+
+const Wallet: React.FC = () => {
+  const [amount, setAmount] = useState<string>('');
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: walletData, isLoading: isLoadingWallet } = useQuery<AxiosResponse<Wallet>>({
+  const { data: walletData, isLoading: isWalletLoading } = useQuery<WalletType>({
     queryKey: ['wallet'],
     queryFn: async () => {
       const response = await walletAPI.getWallet();
-      return response;
+      return response.data;
     },
   });
 
-  const { data: transactionsData, isLoading: isLoadingTransactions } = useQuery<AxiosResponse<Transaction[]>>({
+  const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery<Transaction[]>({
     queryKey: ['transactions'],
     queryFn: async () => {
       const response = await walletAPI.getTransactions();
-      return response;
+      return response.data;
     },
   });
 
-  const addMoneyMutation = useMutation<AxiosResponse<{ balance: number }>, Error, number>({
+  const addMoneyMutation = useMutation<ApiResponse<WalletType>, Error, number>({
     mutationFn: async (amount: number) => {
       const response = await walletAPI.addMoney(amount);
       return response;
@@ -52,31 +55,30 @@ export default function Wallet() {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast({
-        title: 'Money added successfully',
+        title: 'Success',
+        description: 'Money added successfully!',
         status: 'success',
         duration: 3000,
       });
       setAmount('');
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to add money',
-        description: error.message || 'Something went wrong',
+        title: 'Error',
+        description: 'Failed to add money. Please try again.',
         status: 'error',
         duration: 3000,
       });
+      console.error('Add money error:', error);
     },
   });
 
-  // Extract data from the response
-  const wallet = walletData?.data;
-  const transactions = transactionsData?.data || [];
-
-  const handleAddMoney = () => {
+  const handleAddMoney = (e: React.FormEvent) => {
+    e.preventDefault();
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       toast({
-        title: 'Invalid amount',
+        title: 'Error',
         description: 'Please enter a valid amount',
         status: 'error',
         duration: 3000,
@@ -85,6 +87,14 @@ export default function Wallet() {
     }
     addMoneyMutation.mutate(numAmount);
   };
+
+  if (isWalletLoading || isTransactionsLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -104,25 +114,29 @@ export default function Wallet() {
                 Current Balance
               </Text>
               <Text fontSize="4xl" color="green.500">
-                ${isLoadingWallet ? '...' : wallet?.balance.toFixed(2)}
+                ${walletData?.balance.toFixed(2) || '0.00'}
               </Text>
 
               <Box w="100%" maxW="md">
-                <Input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  mb={2}
-                />
-                <Button
-                  colorScheme="blue"
-                  width="full"
-                  onClick={handleAddMoney}
-                  isLoading={addMoneyMutation.isPending}
-                >
-                  Add Money
-                </Button>
+                <form onSubmit={handleAddMoney} className="flex gap-4">
+                  <Input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="flex-1 p-2 border rounded"
+                    min="0"
+                    step="0.01"
+                  />
+                  <Button
+                    type="submit"
+                    colorScheme="blue"
+                    width="full"
+                    isLoading={addMoneyMutation.isPending}
+                  >
+                    {addMoneyMutation.isPending ? 'Adding...' : 'Add Money'}
+                  </Button>
+                </form>
               </Box>
             </VStack>
           </Box>
@@ -141,27 +155,27 @@ export default function Wallet() {
                 </Tr>
               </Thead>
               <Tbody>
-                {isLoadingTransactions ? (
+                {isTransactionsLoading ? (
                   <Tr>
                     <Td colSpan={4} textAlign="center">
                       Loading transactions...
                     </Td>
                   </Tr>
-                ) : transactions?.length === 0 ? (
+                ) : transactionsData?.length === 0 ? (
                   <Tr>
                     <Td colSpan={4} textAlign="center">
                       No transactions found
                     </Td>
                   </Tr>
                 ) : (
-                  transactions?.map((transaction) => (
+                  transactionsData?.map((transaction) => (
                     <Tr key={transaction.id}>
                       <Td>
                         {new Date(transaction.date).toLocaleDateString()}
                       </Td>
                       <Td>${transaction.amount.toFixed(2)}</Td>
                       <Td>
-                        {transaction.credit ? 'Credit' : 'Debit'}
+                        {transaction.credit > 0 ? 'Credit' : 'Debit'}
                       </Td>
                       <Td>
                         <Badge
@@ -180,4 +194,6 @@ export default function Wallet() {
       </Container>
     </>
   );
-} 
+};
+
+export default Wallet; 
