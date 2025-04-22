@@ -94,7 +94,7 @@ export default function Profile() {
                       }}
                       gap={6}
                     >
-                      {sellingProducts.map((product) => (
+                      {sellingProducts.map((product: Product) => (
                         <ProductCard
                           key={product.id}
                           product={product}
@@ -118,7 +118,7 @@ export default function Profile() {
                     }}
                     gap={6}
                   >
-                    {purchasedProducts.map((product) => (
+                    {purchasedProducts.map((product: Product) => (
                       <ProductCard
                         key={product.id}
                         product={product}
