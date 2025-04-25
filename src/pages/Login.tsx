@@ -20,7 +20,11 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import type { LoginCredentials } from '../types/api';
+import type { LoginCredentials, AuthResponse } from '../types/api';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 const schema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -40,8 +44,11 @@ export default function Login() {
     resolver: yupResolver(schema),
   });
 
-  const loginMutation = useMutation({
-    mutationFn: authAPI.login,
+  const loginMutation = useMutation<ApiResponse<AuthResponse>, Error, LoginCredentials>({
+    mutationFn: async (credentials) => {
+      const response = await authAPI.login(credentials);
+      return response;
+    },
     onSuccess: (response) => {
       setAuth(response.data.user, response.data.token);
       toast({
@@ -111,7 +118,7 @@ export default function Login() {
                 width="full"
                 isLoading={loginMutation.isPending}
               >
-                Login
+                {loginMutation.isPending ? 'Logging in...' : 'Login'}
               </Button>
             </VStack>
           </form>

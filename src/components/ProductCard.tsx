@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Image,
@@ -14,6 +13,10 @@ import { useMutation } from '@tanstack/react-query';
 import { productsAPI } from '../services/api';
 import type { Product } from '../types/api';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 interface ProductCardProps {
   product: Product;
   onBuySuccess?: () => void;
@@ -27,8 +30,11 @@ export default function ProductCard({
 }: ProductCardProps) {
   const toast = useToast();
 
-  const buyMutation = useMutation({
-    mutationFn: () => productsAPI.buyProduct(product.id!),
+  const buyMutation = useMutation<ApiResponse<{ success: boolean }>, Error, void>({
+    mutationFn: async () => {
+      const response = await productsAPI.buyProduct(product.id!);
+      return response;
+    },
     onSuccess: () => {
       toast({
         title: 'Purchase successful',
@@ -89,7 +95,7 @@ export default function ProductCard({
                 onClick={() => buyMutation.mutate()}
                 isLoading={buyMutation.isPending}
               >
-                Buy Now
+                {buyMutation.isPending ? 'Processing...' : 'Buy Now'}
               </Button>
             )}
           </HStack>

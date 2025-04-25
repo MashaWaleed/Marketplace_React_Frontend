@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -16,6 +15,11 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
+import type { Product } from '../types/api';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -23,15 +27,18 @@ export default function ProductDetails() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<ApiResponse<Product>>({
     queryKey: ['product', id],
-    queryFn: () => productsAPI.getProduct(id!),
+    queryFn: async () => {
+      const response = await productsAPI.getProduct(id!);
+      return response;
+    },
   });
 
   // Extract product from the response data
   const product = data?.data;
 
-  const buyMutation = useMutation({
+  const buyMutation = useMutation<ApiResponse<{ success: boolean }>, Error, void>({
     mutationFn: async () => {
       const response = await productsAPI.buyProduct(id!);
       return response;
@@ -98,31 +105,22 @@ export default function ProductDetails() {
                 alt={product.name}
                 borderRadius="md"
                 objectFit="cover"
-                height="400px"
+                height="300px"
                 width="100%"
               />
-
-              <VStack align="stretch" spacing={4}>
-                <HStack justify="space-between" align="center">
-                  <Heading size="xl">{product.name}</Heading>
-                  <Badge colorScheme="green" fontSize="lg" px={3} py={1}>
-                    ${product.price.toFixed(2)}
-                  </Badge>
-                </HStack>
-
-                <Text fontSize="lg" color="gray.600">
-                  {product.description}
-                </Text>
-
-                <Button
-                  colorScheme="blue"
-                  size="lg"
-                  onClick={() => buyMutation.mutate()}
-                  isLoading={buyMutation.isPending}
-                >
-                  Buy Now
-                </Button>
-              </VStack>
+              <Heading size="lg">{product.name}</Heading>
+              <Text fontSize="xl" color="blue.500" fontWeight="bold">
+                ${product.price.toFixed(2)}
+              </Text>
+              <Text>{product.description}</Text>
+              <Button
+                colorScheme="blue"
+                size="lg"
+                onClick={() => buyMutation.mutate()}
+                isLoading={buyMutation.isPending}
+              >
+                {buyMutation.isPending ? 'Processing...' : 'Buy Now'}
+              </Button>
             </VStack>
           </Box>
         </VStack>

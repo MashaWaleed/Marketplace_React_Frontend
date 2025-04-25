@@ -19,7 +19,11 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import type { SignupCredentials } from '../types/api';
+import type { SignupCredentials, AuthResponse } from '../types/api';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
@@ -43,8 +47,11 @@ export default function Signup() {
     resolver: yupResolver(schema),
   });
 
-  const signupMutation = useMutation({
-    mutationFn: authAPI.signup,
+  const signupMutation = useMutation<ApiResponse<AuthResponse>, Error, SignupCredentials>({
+    mutationFn: async (credentials) => {
+      const response = await authAPI.signup(credentials);
+      return response;
+    },
     onSuccess: (response) => {
       setAuth(response.data.user, response.data.token);
       toast({
@@ -127,7 +134,7 @@ export default function Signup() {
                 width="full"
                 isLoading={signupMutation.isPending}
               >
-                Sign Up
+                {signupMutation.isPending ? 'Creating account...' : 'Sign Up'}
               </Button>
             </VStack>
           </form>

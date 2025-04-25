@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Flex, Button, Link as ChakraLink, Spacer, Icon, HStack } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -6,7 +5,7 @@ import { FaStore, FaWallet, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from
 
 export default function Navigation() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, clearAuth } = useAuthStore();
+  const { isAuthenticated, clearAuth } = useAuthStore();
 
   const handleLogout = () => {
     clearAuth();

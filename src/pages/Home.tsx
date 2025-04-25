@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Grid,
@@ -15,14 +15,22 @@ import { useQuery } from '@tanstack/react-query';
 import { productsAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import Navigation from '../components/Navigation';
+import type { Product } from '../types/api';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const toast = useToast();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<ApiResponse<Product[]>>({
     queryKey: ['products', searchQuery],
-    queryFn: () => productsAPI.getProducts(searchQuery),
+    queryFn: async () => {
+      const response = await productsAPI.getProducts(searchQuery);
+      return response;
+    },
   });
 
   // Extract products from the response data
@@ -68,7 +76,7 @@ export default function Home() {
               }}
               gap={6}
             >
-              {products.map((product) => (
+              {products.map((product: Product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </Grid>

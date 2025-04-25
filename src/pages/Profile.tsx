@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Container,
   VStack,
@@ -10,7 +9,6 @@ import {
   TabPanel,
   Text,
   Button,
-  useToast,
   Grid,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
@@ -19,10 +17,12 @@ import Navigation from '../components/Navigation';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/api';
 
-export default function Profile() {
-  const toast = useToast();
+interface ApiResponse<T> {
+  data: T;
+}
 
-  const { data: sellingData, isLoading: isLoadingSelling } = useQuery({
+export default function Profile() {
+  const { data: sellingData, isLoading: isLoadingSelling } = useQuery<ApiResponse<Product[]>>({
     queryKey: ['selling-products'],
     queryFn: async () => {
       const response = await productsAPI.getSellingProducts();
@@ -30,7 +30,7 @@ export default function Profile() {
     },
   });
 
-  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery({
+  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery<ApiResponse<Product[]>>({
     queryKey: ['purchased-products'],
     queryFn: async () => {
       const response = await productsAPI.getPurchasedProducts();
@@ -38,7 +38,11 @@ export default function Profile() {
     },
   });
 
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery<ApiResponse<{
+    total_products: number;
+    total_selling_products: number;
+    total_purchased_products: number;
+  }>>({
     queryKey: ['analytics'],
     queryFn: async () => {
       const response = await productsAPI.getAnalytics();
