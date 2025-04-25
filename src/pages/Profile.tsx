@@ -19,6 +19,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { productsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
 import ProductCard from '../components/ProductCard';
@@ -163,6 +164,7 @@ const AnalyticsPanel = () => {
 };
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { data: sellingData, isLoading: isLoadingSelling } = useQuery<ApiResponse<Product[]>>({
     queryKey: ['selling-products'],
     queryFn: async () => {
@@ -224,7 +226,11 @@ export default function Profile() {
             <TabPanels>
               <TabPanel>
                 <VStack spacing={4} align="stretch">
-                  <Button colorScheme="blue" alignSelf="flex-end">
+                  <Button 
+                    colorScheme="blue" 
+                    alignSelf="flex-end"
+                    onClick={() => navigate('/add-product')}
+                  >
                     Add New Product
                   </Button>
 
