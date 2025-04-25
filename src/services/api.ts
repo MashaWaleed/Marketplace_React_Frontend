@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from './api.config';
 import type { LoginCredentials, SignupCredentials, Product, Wallet, Transaction, AuthResponse } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -61,13 +61,6 @@ const mockTransactions: Transaction[] = [
 // Use mock data instead of making API calls
 const useMockData = true;
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 // Add token to requests if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -79,113 +72,57 @@ api.interceptors.request.use((config) => {
 
 export const authAPI = {
   login: (credentials: LoginCredentials) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { 
-            token: 'mock-token-for-development', 
-            user: { name: 'Test User', email: credentials.email } 
-          } 
-        })
-      : api.post('/account/login', credentials),
+    api.post<AuthResponse>('/account/login', credentials),
   
   signup: (credentials: SignupCredentials) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { 
-            token: 'mock-token-for-development', 
-            user: { name: credentials.name, email: credentials.email } 
-          } 
-        })
-      : api.post('/account/signup', credentials),
+    api.post<AuthResponse>('/account/signup', credentials),
   
   verifyToken: (token: string) => 
-    useMockData 
-      ? Promise.resolve({ data: { valid: true } })
-      : api.post('/auth/verify-token', { token }),
+    api.post<{ valid: boolean }>('/auth/verify-token', { token }),
 };
 
 export const productsAPI = {
   getProducts: (query?: string) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: query 
-            ? mockProducts.filter(p => 
-                p.name.toLowerCase().includes(query.toLowerCase()) || 
-                p.description.toLowerCase().includes(query.toLowerCase())
-              )
-            : mockProducts 
-        })
-      : api.get('/products', { params: { q: query } }),
+    api.get<{ data: Product[] }>('/products', { params: { q: query } }),
   
   getProduct: (id: string) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: mockProducts.find(p => p.id === id) || mockProducts[0] 
-        })
-      : api.get(`/products/${id}`),
+    api.get<{ data: Product }>(`/products/${id}`),
   
   createProduct: (product: Omit<Product, 'id'>) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { ...product, id: String(mockProducts.length + 1) } 
-        })
-      : api.post('/products/selling', product),
+    api.post<{ data: Product }>('/products/selling', product),
   
   updateProduct: (id: string, product: Product) => 
-    useMockData 
-      ? Promise.resolve({ data: product })
-      : api.put(`/products/${id}`, product),
+    api.put<{ data: Product }>(`/products/${id}`, product),
   
   deleteProduct: (id: string) => 
-    useMockData 
-      ? Promise.resolve({ data: { success: true } })
-      : api.delete(`/products/${id}`),
+    api.delete<{ success: boolean }>(`/products/${id}`),
   
   getPurchasedProducts: () => 
-    useMockData 
-      ? Promise.resolve({ data: mockProducts.slice(0, 2) })
-      : api.get('/products/purchased'),
+    api.get<{ data: Product[] }>('/products/purchased'),
   
   getSellingProducts: () => 
-    useMockData 
-      ? Promise.resolve({ data: mockProducts.slice(2) })
-      : api.get('/products/selling'),
+    api.get<{ data: Product[] }>('/products/selling'),
   
   buyProduct: (id: string) => 
-    useMockData 
-      ? Promise.resolve({ data: { success: true } })
-      : api.post(`/products/buy/${id}`),
+    api.post<{ success: boolean }>(`/products/buy/${id}`),
   
   getAnalytics: () => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { 
-            total_products: mockProducts.length,
-            total_selling_products: mockProducts.slice(2).length,
-            total_purchased_products: mockProducts.slice(0, 2).length,
-          } 
-        })
-      : api.get('/products/analytics'),
+    api.get<{ 
+      data: { 
+        total_products: number;
+        total_selling_products: number;
+        total_purchased_products: number;
+      } 
+    }>('/products/analytics'),
 };
 
 export const walletAPI = {
   getWallet: () => 
-    useMockData 
-      ? Promise.resolve({ data: mockWallet })
-      : api.get('/e-wallet'),
+    api.get<{ data: Wallet }>('/e-wallet'),
   
   addMoney: (amount: number) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { 
-            ...mockWallet, 
-            balance: mockWallet.balance + amount 
-          } 
-        })
-      : api.post('/e-wallet', { amount }),
+    api.post<{ data: Wallet }>('/e-wallet', { amount }),
   
   getTransactions: () => 
-    useMockData 
-      ? Promise.resolve({ data: mockTransactions })
-      : api.get('/e-wallet/transactions'),
+    api.get<{ data: Transaction[] }>('/e-wallet/transactions'),
 }; 
