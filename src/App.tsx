@@ -11,6 +11,7 @@ const Home = React.lazy(() => import('./pages/Home'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const ProductDetails = React.lazy(() => import('./pages/ProductDetails'));
 const Wallet = React.lazy(() => import('./pages/Wallet').then(module => ({ default: module.default })));
+const AddProduct = React.lazy(() => import('./pages/AddProduct'));
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Wallet />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/add-product"
+                element={
+                  <ProtectedRoute>
+                    <AddProduct />
                   </ProtectedRoute>
                 }
               />
