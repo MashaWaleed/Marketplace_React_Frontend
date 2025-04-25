@@ -2,13 +2,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
   VStack,
-  HStack,
   Heading,
   Text,
   Button,
   Image,
   Box,
-  Badge,
   useToast,
   Spinner,
 } from '@chakra-ui/react';
