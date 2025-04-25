@@ -213,4 +213,43 @@ interface Transaction {
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License.
+
+## Docker
+
+This project includes Docker configuration for easy deployment. Follow these steps to run the application using Docker:
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Running with Docker Compose
+
+1. Build and start the containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Access the application at http://localhost
+
+3. To stop the containers:
+   ```bash
+   docker-compose down
+   ```
+
+### Building the Docker Image Manually
+
+1. Build the Docker image:
+   ```bash
+   docker build -t marketplace-frontend .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 80:80 marketplace-frontend
+   ```
+
+### Environment Variables
+
+The application uses environment variables that can be configured in the `.env` file. When running with Docker, you can override these variables using the `environment` section in the `docker-compose.yml` file. 
