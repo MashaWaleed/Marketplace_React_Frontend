@@ -17,14 +17,17 @@ import {
   StatNumber,
   StatHelpText,
   useColorModeValue,
+  HStack,
+  useToast,
 } from '@chakra-ui/react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { productsAPI } from '../services/api';
+import { productsAPI, authAPI } from '../services/api';
 import Navigation from '../components/Navigation';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React from 'react';
 
 interface ApiResponse<T> {
   data: T;
@@ -163,6 +166,97 @@ const AnalyticsPanel = () => {
   );
 };
 
+const ExternalTokenPanel = () => {
+  const toast = useToast();
+  const [externalToken, setExternalToken] = React.useState<string | null>(null);
+
+  const generateTokenMutation = useMutation({
+    mutationFn: async () => {
+      const response = await authAPI.createExternalToken();
+      return response;
+    },
+    onSuccess: (response) => {
+      setExternalToken(response.data.token);
+      toast({
+        title: 'External token generated successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error generating token',
+        description: error.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    },
+  });
+
+  const copyToClipboard = () => {
+    if (externalToken) {
+      navigator.clipboard.writeText(externalToken);
+      toast({
+        title: 'Token copied to clipboard',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+  return (
+    <VStack spacing={4} align="stretch">
+      <HStack spacing={4}>
+        <Button
+          colorScheme="blue"
+          onClick={() => generateTokenMutation.mutate()}
+          isLoading={generateTokenMutation.isPending}
+        >
+          Generate External Token
+        </Button>
+        <Button
+          colorScheme="red"
+          isDisabled={true}
+        >
+          Invalidate All Tokens
+        </Button>
+      </HStack>
+
+      {externalToken && (
+        <Box
+          p={4}
+          bg={useColorModeValue('white', 'gray.800')}
+          borderRadius="lg"
+          borderWidth="1px"
+          borderColor={useColorModeValue('gray.200', 'gray.700')}
+        >
+          <Text mb={2} fontWeight="bold">Your External Token:</Text>
+          <HStack>
+            <Text
+              p={2}
+              bg={useColorModeValue('gray.100', 'gray.700')}
+              borderRadius="md"
+              fontFamily="monospace"
+              wordBreak="break-all"
+            >
+              {externalToken}
+            </Text>
+            <Button
+              size="sm"
+              onClick={copyToClipboard}
+            >
+              Copy
+            </Button>
+          </HStack>
+        </Box>
+      )}
+    </VStack>
+  );
+};
+
 export default function Profile() {
   const navigate = useNavigate();
   const { data: sellingData, isLoading: isLoadingSelling } = useQuery<ApiResponse<Product[]>>({
@@ -221,6 +315,7 @@ export default function Profile() {
               <Tab>Selling</Tab>
               <Tab>Purchased</Tab>
               <Tab>Analytics</Tab>
+              <Tab>External Token</Tab>
             </TabList>
 
             <TabPanels>
@@ -282,6 +377,10 @@ export default function Profile() {
 
               <TabPanel>
                 <AnalyticsPanel />
+              </TabPanel>
+
+              <TabPanel>
+                <ExternalTokenPanel />
               </TabPanel>
             </TabPanels>
           </Tabs>

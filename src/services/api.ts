@@ -102,6 +102,15 @@ export const authAPI = {
     useMockData 
       ? Promise.resolve({ data: { valid: true } })
       : api.post('/auth/verify-token', { token }),
+
+  createExternalToken: () =>
+    useMockData
+      ? Promise.resolve({
+          data: {
+            token: 'mock-external-token-' + Math.random().toString(36).substring(2, 15)
+          }
+        })
+      : api.post('/account/create-external-token'),
 };
 
 export const productsAPI = {
