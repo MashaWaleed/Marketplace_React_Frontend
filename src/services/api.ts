@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { LoginCredentials, SignupCredentials, Product, Wallet, Transaction, AuthResponse } from '../types/api';
+import type { LoginCredentials, SignupCredentials, Product, Wallet, Transaction, AuthResponse, AddMoneyResponse, ExternalTokenResponse } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -82,21 +82,21 @@ export const authAPI = {
     useMockData 
       ? Promise.resolve({ 
           data: { 
-            token: 'mock-token-for-development', 
-            user: { name: 'Test User', email: credentials.email } 
+            name: 'Test User', 
+            email: credentials.email 
           } 
         })
-      : api.post('/account/login', credentials),
+      : api.post<AuthResponse>('/account/login', credentials),
   
   signup: (credentials: SignupCredentials) => 
     useMockData 
       ? Promise.resolve({ 
           data: { 
-            token: 'mock-token-for-development', 
-            user: { name: credentials.name, email: credentials.email } 
+            name: credentials.name, 
+            email: credentials.email 
           } 
         })
-      : api.post('/account/signup', credentials),
+      : api.post<AuthResponse>('/account/signup', credentials),
   
   verifyToken: (token: string) => 
     useMockData 
@@ -110,7 +110,7 @@ export const authAPI = {
             token: 'mock-external-token-' + Math.random().toString(36).substring(2, 15)
           }
         })
-      : api.post('/account/create-external-token'),
+      : api.post<ExternalTokenResponse>('/account/create-external-token'),
 };
 
 export const productsAPI = {
@@ -124,26 +124,26 @@ export const productsAPI = {
               )
             : mockProducts 
         })
-      : api.get('/products', { params: { q: query } }),
+      : api.get<Product[]>('/products', { params: { q: query } }),
   
   getProduct: (id: string) => 
     useMockData 
       ? Promise.resolve({ 
           data: mockProducts.find(p => p.id === id) || mockProducts[0] 
         })
-      : api.get(`/products/${id}`),
+      : api.get<Product>(`/products/${id}`),
   
   createProduct: (product: Omit<Product, 'id'>) => 
     useMockData 
       ? Promise.resolve({ 
           data: { ...product, id: String(mockProducts.length + 1) } 
         })
-      : api.post('/products/selling', product),
+      : api.post<Product>('/products/selling', product),
   
   updateProduct: (id: string, product: Product) => 
     useMockData 
       ? Promise.resolve({ data: product })
-      : api.put(`/products/${id}`, product),
+      : api.put<Product>(`/products/${id}`, product),
   
   deleteProduct: (id: string) => 
     useMockData 
@@ -153,12 +153,12 @@ export const productsAPI = {
   getPurchasedProducts: () => 
     useMockData 
       ? Promise.resolve({ data: mockProducts.slice(0, 2) })
-      : api.get('/products/purchased'),
+      : api.get<Product[]>('/products/purchased'),
   
   getSellingProducts: () => 
     useMockData 
       ? Promise.resolve({ data: mockProducts.slice(2) })
-      : api.get('/products/selling'),
+      : api.get<Product[]>('/products/selling'),
   
   buyProduct: (id: string) => 
     useMockData 
@@ -181,20 +181,19 @@ export const walletAPI = {
   getWallet: () => 
     useMockData 
       ? Promise.resolve({ data: mockWallet })
-      : api.get('/e-wallet'),
+      : api.get<Wallet>('/e-wallet'),
   
   addMoney: (amount: number) => 
     useMockData 
       ? Promise.resolve({ 
           data: { 
-            ...mockWallet, 
-            balance: mockWallet.balance + amount 
+            session_id: 'mock-session-id-' + Math.random().toString(36).substring(2, 15)
           } 
         })
-      : api.post('/e-wallet', { amount }),
+      : api.post<AddMoneyResponse>('/e-wallet', { amount }),
   
   getTransactions: () => 
     useMockData 
       ? Promise.resolve({ data: mockTransactions })
-      : api.get('/e-wallet/transactions'),
+      : api.get<Transaction[]>('/e-wallet/transactions'),
 }; 

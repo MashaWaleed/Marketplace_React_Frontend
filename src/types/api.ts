@@ -29,11 +29,27 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface SignupCredentials extends LoginCredentials {
+export interface SignupCredentials {
   name: string;
+  email: string;
+  password: string;
 }
 
 export interface AuthResponse {
+  name: string;
+  email: string;
+}
+
+export interface AnalyticsData {
+  total_products: number;
+  total_selling_products: number;
+  total_purchased_products: number;
+}
+
+export interface AddMoneyResponse {
+  session_id: string;
+}
+
+export interface ExternalTokenResponse {
   token: string;
-  user: User;
 } 

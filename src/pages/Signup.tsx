@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,6 +20,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import type { SignupCredentials, AuthResponse } from '../types/api';
+import Navigation from '../components/Navigation';
 
 interface ApiResponse<T> {
   data: T;
@@ -37,6 +39,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const toast = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -55,10 +58,12 @@ export default function Signup() {
       setAuth(response.data.user, response.data.token);
       toast({
         title: 'Account created successfully',
+        description: 'Please login with your credentials',
         status: 'success',
         duration: 3000,
+        isClosable: true,
       });
-      navigate('/');
+      navigate('/login');
     },
     onError: (error: any) => {
       toast({
@@ -66,86 +71,95 @@ export default function Signup() {
         description: error.response?.data?.message || 'Something went wrong',
         status: 'error',
         duration: 3000,
+        isClosable: true,
       });
     },
   });
 
   const onSubmit = (data: SignupCredentials) => {
-    signupMutation.mutate(data);
+    setIsLoading(true);
+    signupMutation.mutate(data, {
+      onSettled: () => {
+        setIsLoading(false);
+      },
+    });
   };
 
   return (
-    <Container maxW="container.sm" py={10}>
-      <Box
-        p={8}
-        borderWidth={1}
-        borderRadius="lg"
-        boxShadow="lg"
-      >
-        <VStack spacing={4} align="stretch">
-          <Heading textAlign="center">Create Account</Heading>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <VStack spacing={4}>
-              <FormControl isInvalid={!!errors.name}>
-                <FormLabel>Name</FormLabel>
-                <Input
-                  {...register('name')}
-                  placeholder="Enter your name"
-                />
-                {errors.name && (
-                  <Text color="red.500" fontSize="sm">
-                    {errors.name.message}
-                  </Text>
-                )}
-              </FormControl>
+    <>
+      <Navigation />
+      <Container maxW="container.sm" py={10}>
+        <Box
+          p={8}
+          borderWidth={1}
+          borderRadius="lg"
+          boxShadow="lg"
+        >
+          <VStack spacing={4} align="stretch">
+            <Heading textAlign="center">Create Account</Heading>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <VStack spacing={4}>
+                <FormControl isInvalid={!!errors.name}>
+                  <FormLabel>Name</FormLabel>
+                  <Input
+                    {...register('name')}
+                    placeholder="Enter your name"
+                  />
+                  {errors.name && (
+                    <Text color="red.500" fontSize="sm">
+                      {errors.name.message}
+                    </Text>
+                  )}
+                </FormControl>
 
-              <FormControl isInvalid={!!errors.email}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  type="email"
-                  {...register('email')}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <Text color="red.500" fontSize="sm">
-                    {errors.email.message}
-                  </Text>
-                )}
-              </FormControl>
+                <FormControl isInvalid={!!errors.email}>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    type="email"
+                    {...register('email')}
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <Text color="red.500" fontSize="sm">
+                      {errors.email.message}
+                    </Text>
+                  )}
+                </FormControl>
 
-              <FormControl isInvalid={!!errors.password}>
-                <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  {...register('password')}
-                  placeholder="Enter your password"
-                />
-                {errors.password && (
-                  <Text color="red.500" fontSize="sm">
-                    {errors.password.message}
-                  </Text>
-                )}
-              </FormControl>
+                <FormControl isInvalid={!!errors.password}>
+                  <FormLabel>Password</FormLabel>
+                  <Input
+                    type="password"
+                    {...register('password')}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && (
+                    <Text color="red.500" fontSize="sm">
+                      {errors.password.message}
+                    </Text>
+                  )}
+                </FormControl>
 
-              <Button
-                type="submit"
-                colorScheme="blue"
-                width="full"
-                isLoading={signupMutation.isPending}
-              >
-                {signupMutation.isPending ? 'Creating account...' : 'Sign Up'}
-              </Button>
-            </VStack>
-          </form>
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  width="full"
+                  isLoading={isLoading}
+                >
+                  {isLoading ? 'Creating account...' : 'Sign Up'}
+                </Button>
+              </VStack>
+            </form>
 
-          <Text textAlign="center">
-            Already have an account?{' '}
-            <Link as={RouterLink} to="/login" color="blue.500">
-              Login
-            </Link>
-          </Text>
-        </VStack>
-      </Box>
-    </Container>
+            <Text textAlign="center">
+              Already have an account?{' '}
+              <Link as={RouterLink} to="/login" color="blue.500">
+                Login
+              </Link>
+            </Text>
+          </VStack>
+        </Box>
+      </Container>
+    </>
   );
 } 

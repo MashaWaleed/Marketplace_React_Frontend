@@ -30,25 +30,28 @@ export default function ProductCard({
 }: ProductCardProps) {
   const toast = useToast();
 
-  const buyMutation = useMutation<ApiResponse<{ success: boolean }>, Error, void>({
+  const buyMutation = useMutation({
     mutationFn: async () => {
       const response = await productsAPI.buyProduct(product.id!);
-      return response;
+      return response.data;
     },
     onSuccess: () => {
       toast({
         title: 'Purchase successful',
+        description: 'The product has been added to your purchased items',
         status: 'success',
         duration: 3000,
+        isClosable: true,
       });
       onBuySuccess?.();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Purchase failed',
-        description: error.response?.data?.message || 'Something went wrong',
+        description: error.message,
         status: 'error',
         duration: 3000,
+        isClosable: true,
       });
     },
   });

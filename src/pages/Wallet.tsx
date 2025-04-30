@@ -16,21 +16,16 @@ import {
   Box,
   Badge,
 } from '@chakra-ui/react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { walletAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import { Wallet as WalletType, Transaction } from '../types/api';
+import type { Transaction } from '../types/api';
 
-interface ApiResponse<T> {
-  data: T;
-}
-
-const Wallet: React.FC = () => {
-  const [amount, setAmount] = useState<string>('');
+export default function Wallet() {
   const toast = useToast();
-  const queryClient = useQueryClient();
+  const [amount, setAmount] = useState('');
 
-  const { data: walletData, isLoading: isWalletLoading } = useQuery<WalletType>({
+  const { data: walletData, isLoading: isLoadingWallet } = useQuery({
     queryKey: ['wallet'],
     queryFn: async () => {
       const response = await walletAPI.getWallet();
@@ -38,7 +33,7 @@ const Wallet: React.FC = () => {
     },
   });
 
-  const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery<Transaction[]>({
+  const { data: transactionsData, isLoading: isLoadingTransactions } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
       const response = await walletAPI.getTransactions();
@@ -46,53 +41,49 @@ const Wallet: React.FC = () => {
     },
   });
 
-  const addMoneyMutation = useMutation<ApiResponse<WalletType>, Error, number>({
+  const addMoneyMutation = useMutation({
     mutationFn: async (amount: number) => {
       const response = await walletAPI.addMoney(amount);
-      return response;
+      return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast({
-        title: 'Success',
-        description: 'Money added successfully!',
-        status: 'success',
-        duration: 3000,
-      });
-      setAmount('');
+    onSuccess: (data) => {
+      // Redirect to Paymob payment page
+      window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=egy_pk_test_iarm6PIypVfSekwNDDqAbzhOhHczpizr&clientSecret=egy_csk_test_974596e7ef65826fa3014e2eeff3a217&sessionId=${data.session_id}`;
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: 'Error',
-        description: 'Failed to add money. Please try again.',
+        title: 'Failed to create payment session',
+        description: error.message,
         status: 'error',
         duration: 3000,
+        isClosable: true,
       });
-      console.error('Add money error:', error);
     },
   });
 
-  const handleAddMoney = (e: React.FormEvent) => {
-    e.preventDefault();
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
+  const handleAddMoney = () => {
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
       toast({
-        title: 'Error',
-        description: 'Please enter a valid amount',
+        title: 'Invalid amount',
+        description: 'Please enter a valid amount greater than 0',
         status: 'error',
         duration: 3000,
+        isClosable: true,
       });
       return;
     }
-    addMoneyMutation.mutate(numAmount);
+    addMoneyMutation.mutate(amountNum);
   };
 
-  if (isWalletLoading || isTransactionsLoading) {
+  if (isLoadingWallet || isLoadingTransactions) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <>
+        <Navigation />
+        <Container maxW="container.xl" py={8}>
+          <Text>Loading...</Text>
+        </Container>
+      </>
     );
   }
 
@@ -101,50 +92,46 @@ const Wallet: React.FC = () => {
       <Navigation />
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <Heading textAlign="center">E-Wallet</Heading>
+          <Heading textAlign="center">My Wallet</Heading>
 
           <Box
             p={6}
-            borderWidth={1}
+            bg="white"
             borderRadius="lg"
-            boxShadow="lg"
+            boxShadow="md"
           >
             <VStack spacing={4}>
               <Text fontSize="2xl" fontWeight="bold">
-                Current Balance
-              </Text>
-              <Text fontSize="4xl" color="green.500">
-                ${walletData?.balance.toFixed(2) || '0.00'}
+                Current Balance: ${walletData?.balance.toFixed(2)}
               </Text>
 
-              <Box w="100%" maxW="md">
-                <form onSubmit={handleAddMoney} className="flex gap-4">
-                  <Input
-                    type="number"
-                    placeholder="Enter amount"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="flex-1 p-2 border rounded"
-                    min="0"
-                    step="0.01"
-                  />
-                  <Button
-                    type="submit"
-                    colorScheme="blue"
-                    width="full"
-                    isLoading={addMoneyMutation.isPending}
-                  >
-                    {addMoneyMutation.isPending ? 'Adding...' : 'Add Money'}
-                  </Button>
-                </form>
+              <Box width="full">
+                <Input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  mb={4}
+                />
+                <Button
+                  colorScheme="blue"
+                  width="full"
+                  onClick={handleAddMoney}
+                  isLoading={addMoneyMutation.isPending}
+                >
+                  Add Money
+                </Button>
               </Box>
             </VStack>
           </Box>
 
-          <Box>
-            <Heading size="md" mb={4}>
-              Transaction History
-            </Heading>
+          <Box
+            p={6}
+            bg="white"
+            borderRadius="lg"
+            boxShadow="md"
+          >
+            <Heading size="md" mb={4}>Transaction History</Heading>
             <Table variant="simple">
               <Thead>
                 <Tr>
@@ -155,38 +142,14 @@ const Wallet: React.FC = () => {
                 </Tr>
               </Thead>
               <Tbody>
-                {isTransactionsLoading ? (
-                  <Tr>
-                    <Td colSpan={4} textAlign="center">
-                      Loading transactions...
-                    </Td>
+                {transactionsData?.map((transaction: Transaction) => (
+                  <Tr key={transaction.id}>
+                    <Td>{new Date(transaction.date).toLocaleDateString()}</Td>
+                    <Td>${transaction.amount.toFixed(2)}</Td>
+                    <Td>{transaction.credit > 0 ? 'Credit' : 'Debit'}</Td>
+                    <Td>{transaction.done ? 'Completed' : 'Pending'}</Td>
                   </Tr>
-                ) : transactionsData?.length === 0 ? (
-                  <Tr>
-                    <Td colSpan={4} textAlign="center">
-                      No transactions found
-                    </Td>
-                  </Tr>
-                ) : (
-                  transactionsData?.map((transaction) => (
-                    <Tr key={transaction.id}>
-                      <Td>
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </Td>
-                      <Td>${transaction.amount.toFixed(2)}</Td>
-                      <Td>
-                        {transaction.credit > 0 ? 'Credit' : 'Debit'}
-                      </Td>
-                      <Td>
-                        <Badge
-                          colorScheme={transaction.done ? 'green' : 'yellow'}
-                        >
-                          {transaction.done ? 'Completed' : 'Pending'}
-                        </Badge>
-                      </Td>
-                    </Tr>
-                  ))
-                )}
+                ))}
               </Tbody>
             </Table>
           </Box>
@@ -194,6 +157,4 @@ const Wallet: React.FC = () => {
       </Container>
     </>
   );
-};
-
-export default Wallet; 
+} 
