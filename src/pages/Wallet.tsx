@@ -48,7 +48,7 @@ export default function Wallet() {
     },
     onSuccess: (data) => {
       // Redirect to Paymob payment page
-      window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=egy_pk_test_iarm6PIypVfSekwNDDqAbzhOhHczpizr&clientSecret=egy_csk_test_974596e7ef65826fa3014e2eeff3a217&sessionId=${data.session_id}`;
+      window.location.href = ${data.payment_url};
     },
     onError: (error: Error) => {
       toast({
