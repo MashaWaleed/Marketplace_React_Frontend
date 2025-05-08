@@ -77,6 +77,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Helper function to extract error message from API response
+export const getErrorMessage = (error: any): string => {
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return 'An unexpected error occurred';
+};
+
 export const authAPI = {
   login: (credentials: LoginCredentials) =>
     useMockData

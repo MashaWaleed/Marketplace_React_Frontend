@@ -17,7 +17,7 @@ import {
   Container,
 } from '@chakra-ui/react';
 import { useMutation } from '@tanstack/react-query';
-import { authAPI } from '../services/api';
+import { authAPI, getErrorMessage } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import type { SignupCredentials, AuthResponse } from '../types/api';
 import Navigation from '../components/Navigation';
@@ -66,7 +66,7 @@ export default function Signup() {
     onError: (error: Error) => {
       toast({
         title: 'Signup failed',
-        description: error.message,
+        description: getErrorMessage(error),
         status: 'error',
         duration: 3000,
         isClosable: true,

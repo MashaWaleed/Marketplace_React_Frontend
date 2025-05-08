@@ -17,7 +17,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { walletAPI } from '../services/api';
+import { walletAPI, getErrorMessage } from '../services/api';
 import Navigation from '../components/Navigation';
 import type { Transaction } from '../types/api';
 
@@ -53,7 +53,7 @@ export default function Wallet() {
     onError: (error: Error) => {
       toast({
         title: 'Failed to create payment session',
-        description: error.message,
+        description: getErrorMessage(error),
         status: 'error',
         duration: 3000,
         isClosable: true,

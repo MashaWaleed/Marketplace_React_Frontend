@@ -11,7 +11,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsAPI } from '../services/api';
+import { productsAPI, getErrorMessage } from '../services/api';
 import Navigation from '../components/Navigation';
 import type { Product } from '../types/api';
 
@@ -54,7 +54,7 @@ export default function ProductDetails() {
     onError: (error: any) => {
       toast({
         title: 'Purchase failed',
-        description: error.response?.data?.message || 'Something went wrong',
+        description: getErrorMessage(error),
         status: 'error',
         duration: 3000,
       });

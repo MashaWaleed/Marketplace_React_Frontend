@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { productsAPI } from '../services/api';
+import { productsAPI, getErrorMessage } from '../services/api';
 import type { Product } from '../types/api';
 
 interface ApiResponse<T> {
@@ -48,7 +48,7 @@ export default function ProductCard({
     onError: (error: Error) => {
       toast({
         title: 'Purchase failed',
-        description: error.message,
+        description: getErrorMessage(error),
         status: 'error',
         duration: 3000,
         isClosable: true,
