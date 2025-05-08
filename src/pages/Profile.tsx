@@ -28,6 +28,7 @@ import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import React from 'react';
+import { useAuthStore } from '../store/authStore';
 
 interface ApiResponse<T> {
   data: T;
@@ -264,6 +265,7 @@ const ExternalTokenPanel = () => {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { data: sellingData, isLoading: isLoadingSelling } = useQuery<ApiResponse<Product[]>>({
     queryKey: ['selling-products'],
     queryFn: async () => {
@@ -313,7 +315,14 @@ export default function Profile() {
       <Navigation />
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <Heading textAlign="center">My Profile</Heading>
+          <VStack spacing={2}>
+            <Heading textAlign="center">My Profile</Heading>
+            {user?.name && (
+              <Text fontSize="xl" color="blue.500" fontWeight="medium">
+                {user.name}
+              </Text>
+            )}
+          </VStack>
 
           <Tabs isFitted variant="enclosed">
             <TabList mb="1em">

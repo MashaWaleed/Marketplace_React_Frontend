@@ -1,11 +1,11 @@
-import { Box, Flex, Button, Link as ChakraLink, Spacer, Icon, HStack } from '@chakra-ui/react';
+import { Box, Flex, Button, Link as ChakraLink, Spacer, Icon, HStack, Text } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { FaStore, FaWallet, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 
 export default function Navigation() {
   const navigate = useNavigate();
-  const { isAuthenticated, clearAuth } = useAuthStore();
+  const { isAuthenticated, clearAuth, user } = useAuthStore();
 
   const handleLogout = () => {
     clearAuth();
@@ -33,6 +33,11 @@ export default function Navigation() {
         
         {isAuthenticated ? (
           <Flex gap={4} align="center">
+            {user?.name && (
+              <Text color="white" fontWeight="medium">
+                Welcome, {user.name}
+              </Text>
+            )}
             <ChakraLink 
               as={RouterLink} 
               to="/wallet" 
