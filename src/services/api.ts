@@ -189,7 +189,7 @@ export const walletAPI = {
     useMockData 
       ? Promise.resolve({ 
           data: { 
-            session_id: 'mock-session-id-' + Math.random().toString(36).substring(2, 15)
+            payment_url: 'mock-session-id-' + Math.random().toString(36).substring(2, 15)
           } 
         })
       : api.post<AddMoneyResponse>('/e-wallet', { amount }),

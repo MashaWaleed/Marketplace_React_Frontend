@@ -48,7 +48,7 @@ export default function Wallet() {
     },
     onSuccess: (data) => {
       // Redirect to Paymob payment page
-      window.location.href = data.payment_url;
+      window.location.href = `${data.payment_url}`;
     },
     onError: (error: Error) => {
       toast({
