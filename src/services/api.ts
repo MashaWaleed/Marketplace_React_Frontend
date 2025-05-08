@@ -43,7 +43,7 @@ const mockTransactions: Transaction[] = [
   {
     id: '1',
     amount: 500.00,
-    date: '2023-04-01T10:00:00Z',
+    date: new Date('2024-03-15T10:00:00Z').toISOString(),
     credit: 500.00,
     debit: 0,
     done: true,
@@ -51,7 +51,7 @@ const mockTransactions: Transaction[] = [
   {
     id: '2',
     amount: 200.00,
-    date: '2023-04-05T15:30:00Z',
+    date: new Date('2024-03-16T15:30:00Z').toISOString(),
     credit: 0,
     debit: 200.00,
     done: true,

@@ -144,10 +144,20 @@ export default function Wallet() {
               <Tbody>
                 {transactionsData?.map((transaction: Transaction) => (
                   <Tr key={transaction.id}>
-                    <Td>{new Date(transaction.date).toLocaleDateString()}</Td>
+                    <Td>{new Date(transaction.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</Td>
                     <Td>${transaction.amount.toFixed(2)}</Td>
                     <Td>{transaction.credit > 0 ? 'Credit' : 'Debit'}</Td>
-                    <Td>{transaction.done ? 'Completed' : 'Pending'}</Td>
+                    <Td>
+                      <Badge colorScheme={transaction.done ? 'green' : 'yellow'}>
+                        {transaction.done ? 'Completed' : 'Pending'}
+                      </Badge>
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
