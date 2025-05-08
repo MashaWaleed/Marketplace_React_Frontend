@@ -48,7 +48,7 @@ export interface AnalyticsData {
 }
 
 export interface AddMoneyResponse {
-  session_id: string;
+  payment_url: string;
 }
 
 export interface ExternalTokenResponse {
