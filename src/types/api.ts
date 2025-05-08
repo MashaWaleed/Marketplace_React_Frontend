@@ -38,6 +38,7 @@ export interface SignupCredentials {
 export interface AuthResponse {
   name: string;
   email: string;
+  token: string;
 }
 
 export interface AnalyticsData {

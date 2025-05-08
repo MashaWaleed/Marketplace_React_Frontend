@@ -78,22 +78,24 @@ api.interceptors.request.use((config) => {
 });
 
 export const authAPI = {
-  login: (credentials: LoginCredentials) => 
-    useMockData 
-      ? Promise.resolve({ 
-          data: { 
-            name: 'Test User', 
-            email: credentials.email 
-          } 
+  login: (credentials: LoginCredentials) =>
+    useMockData
+      ? Promise.resolve({
+          data: {
+            name: 'Mock User',
+            email: credentials.email,
+            token: 'mock-token-' + Math.random().toString(36).substring(2, 15)
+          }
         })
-      : api.post<AuthResponse>('/account/login', credentials),
+      : api.post('/account/login', credentials),
   
   signup: (credentials: SignupCredentials) => 
     useMockData 
       ? Promise.resolve({ 
           data: { 
             name: credentials.name, 
-            email: credentials.email 
+            email: credentials.email,
+            token: 'mock-token-' + Math.random().toString(36).substring(2, 15)
           } 
         })
       : api.post<AuthResponse>('/account/signup', credentials),

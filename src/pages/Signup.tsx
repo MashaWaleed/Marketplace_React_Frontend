@@ -29,10 +29,9 @@ interface ApiResponse<T> {
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('Password is required'),
+  password: yup.string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters'),
 });
 
 export default function Signup() {
@@ -55,7 +54,6 @@ export default function Signup() {
       return response;
     },
     onSuccess: (response) => {
-      setAuth(response.data.user, response.data.token);
       toast({
         title: 'Account created successfully',
         description: 'Please login with your credentials',
@@ -65,10 +63,10 @@ export default function Signup() {
       });
       navigate('/login');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Signup failed',
-        description: error.response?.data?.message || 'Something went wrong',
+        description: error.message,
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -96,7 +94,7 @@ export default function Signup() {
           boxShadow="lg"
         >
           <VStack spacing={4} align="stretch">
-            <Heading textAlign="center">Create Account</Heading>
+            <Heading textAlign="center">Sign Up</Heading>
             <form onSubmit={handleSubmit(onSubmit)}>
               <VStack spacing={4}>
                 <FormControl isInvalid={!!errors.name}>

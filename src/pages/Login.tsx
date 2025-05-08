@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,6 +20,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials, AuthResponse } from '../types/api';
+import Navigation from '../components/Navigation';
 
 interface ApiResponse<T> {
   data: T;
@@ -33,6 +35,7 @@ export default function Login() {
   const navigate = useNavigate();
   const toast = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -48,87 +51,97 @@ export default function Login() {
       return response;
     },
     onSuccess: (response) => {
-      setAuth(response.data.user, response.data.token);
+      setAuth(response.data, response.data.token);
       toast({
         title: 'Login successful',
         status: 'success',
         duration: 3000,
+        isClosable: true,
       });
       navigate('/');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Login failed',
-        description: error.response?.data?.message || 'Something went wrong',
+        description: error.message,
         status: 'error',
         duration: 3000,
+        isClosable: true,
       });
     },
   });
 
   const onSubmit = (data: LoginCredentials) => {
-    loginMutation.mutate(data);
+    setIsLoading(true);
+    loginMutation.mutate(data, {
+      onSettled: () => {
+        setIsLoading(false);
+      },
+    });
   };
 
   return (
-    <Container maxW="container.sm" py={10}>
-      <Box
-        p={8}
-        borderWidth={1}
-        borderRadius="lg"
-        boxShadow="lg"
-      >
-        <VStack spacing={4} align="stretch">
-          <Heading textAlign="center">Login</Heading>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <VStack spacing={4}>
-              <FormControl isInvalid={!!errors.email}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  type="email"
-                  {...register('email')}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <Text color="red.500" fontSize="sm">
-                    {errors.email.message}
-                  </Text>
-                )}
-              </FormControl>
+    <>
+      <Navigation />
+      <Container maxW="container.sm" py={10}>
+        <Box
+          p={8}
+          borderWidth={1}
+          borderRadius="lg"
+          boxShadow="lg"
+        >
+          <VStack spacing={4} align="stretch">
+            <Heading textAlign="center">Login</Heading>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <VStack spacing={4}>
+                <FormControl isInvalid={!!errors.email}>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    type="email"
+                    {...register('email')}
+                    placeholder="Enter your email"
+                  />
+                  {errors.email && (
+                    <Text color="red.500" fontSize="sm">
+                      {errors.email.message}
+                    </Text>
+                  )}
+                </FormControl>
 
-              <FormControl isInvalid={!!errors.password}>
-                <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  {...register('password')}
-                  placeholder="Enter your password"
-                />
-                {errors.password && (
-                  <Text color="red.500" fontSize="sm">
-                    {errors.password.message}
-                  </Text>
-                )}
-              </FormControl>
+                <FormControl isInvalid={!!errors.password}>
+                  <FormLabel>Password</FormLabel>
+                  <Input
+                    type="password"
+                    {...register('password')}
+                    placeholder="Enter your password"
+                  />
+                  {errors.password && (
+                    <Text color="red.500" fontSize="sm">
+                      {errors.password.message}
+                    </Text>
+                  )}
+                </FormControl>
 
-              <Button
-                type="submit"
-                colorScheme="blue"
-                width="full"
-                isLoading={loginMutation.isPending}
-              >
-                {loginMutation.isPending ? 'Logging in...' : 'Login'}
-              </Button>
-            </VStack>
-          </form>
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  width="full"
+                  isLoading={isLoading}
+                >
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </Button>
+              </VStack>
+            </form>
 
-          <Text textAlign="center">
-            Don't have an account?{' '}
-            <Link as={RouterLink} to="/signup" color="blue.500">
-              Sign up
-            </Link>
-          </Text>
-        </VStack>
-      </Box>
-    </Container>
+            <Text textAlign="center">
+              Don't have an account?{' '}
+              <Link as={RouterLink} to="/signup" color="blue.500">
+                Sign Up
+              </Link>
+            </Text>
+          </VStack>
+        </Box>
+      </Container>
+    </>
   );
 } 
