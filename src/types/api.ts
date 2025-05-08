@@ -5,10 +5,14 @@ export interface User {
 
 export interface Product {
   id?: string;
+  product_id?: number;
   name: string;
   price: number;
   picture_url: string;
   description: string;
+  seller_id?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Wallet {
@@ -36,8 +40,10 @@ export interface SignupCredentials {
 }
 
 export interface AuthResponse {
-  name: string;
-  email: string;
+  user: {
+    name: string;
+    email: string;
+  };
   token: string;
 }
 

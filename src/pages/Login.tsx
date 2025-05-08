@@ -51,7 +51,8 @@ export default function Login() {
       return response;
     },
     onSuccess: (response) => {
-      setAuth(response.data, response.data.token);
+      const { user, token } = response.data;
+      setAuth(user, token);
       toast({
         title: 'Login successful',
         status: 'success',

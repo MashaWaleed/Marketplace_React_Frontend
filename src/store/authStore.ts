@@ -19,10 +19,9 @@ const mockUser: User = {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      // Set default values to mock user for development
-      user: mockUser,
-      token: 'mock-token-for-development',
-      isAuthenticated: true,
+      user: null,
+      token: null,
+      isAuthenticated: false,
       setAuth: (user, token) => {
         localStorage.setItem('token', token);
         set({ user, token, isAuthenticated: true });

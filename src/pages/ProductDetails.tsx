@@ -101,14 +101,14 @@ export default function ProductDetails() {
               <Image
                 src={product.picture_url}
                 alt={product.name}
-                borderRadius="md"
+                borderRadius="lg"
                 objectFit="cover"
-                height="300px"
-                width="100%"
+                maxH="400px"
+                w="100%"
               />
               <Heading size="lg">{product.name}</Heading>
-              <Text fontSize="xl" color="blue.500" fontWeight="bold">
-                ${product.price.toFixed(2)}
+              <Text fontSize="2xl" fontWeight="bold">
+                ${Number(product.price).toFixed(2)}
               </Text>
               <Text>{product.description}</Text>
               <Button

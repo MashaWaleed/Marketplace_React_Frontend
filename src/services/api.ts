@@ -7,31 +7,47 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 const mockProducts: Product[] = [
   {
     id: '1',
+    product_id: 1,
     name: 'Smartphone',
     price: 699.99,
     picture_url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=600&fit=crop',
     description: 'Latest smartphone with advanced features and high-performance camera.',
+    seller_id: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '2',
+    product_id: 2,
     name: 'Laptop',
     price: 1299.99,
     picture_url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=600&fit=crop',
     description: 'Powerful laptop for work and entertainment with long battery life.',
+    seller_id: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '3',
+    product_id: 3,
     name: 'Headphones',
     price: 199.99,
     picture_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop',
     description: 'Wireless noise-cancelling headphones with premium sound quality.',
+    seller_id: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '4',
+    product_id: 4,
     name: 'Smartwatch',
     price: 299.99,
     picture_url: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&h=600&fit=crop',
     description: 'Feature-rich smartwatch with health tracking and notifications.',
+    seller_id: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ];
 
@@ -93,19 +109,23 @@ export const authAPI = {
     useMockData
       ? Promise.resolve({
           data: {
-            name: 'Mock User',
-            email: credentials.email,
+            user: {
+              name: 'Mock User',
+              email: credentials.email
+            },
             token: 'mock-token-' + Math.random().toString(36).substring(2, 15)
           }
         })
-      : api.post('/account/login', credentials),
+      : api.post<AuthResponse>('/account/login', credentials),
   
   signup: (credentials: SignupCredentials) => 
     useMockData 
       ? Promise.resolve({ 
           data: { 
-            name: credentials.name, 
-            email: credentials.email,
+            user: {
+              name: credentials.name, 
+              email: credentials.email
+            },
             token: 'mock-token-' + Math.random().toString(36).substring(2, 15)
           } 
         })
@@ -125,6 +145,13 @@ export const authAPI = {
         })
       : api.post<ExternalTokenResponse>('/account/create-external-token'),
 };
+
+interface PurchaseRecord {
+  date_time: string;
+  buyer_id: number;
+  product_id: number;
+  Product: Product;
+}
 
 export const productsAPI = {
   getProducts: (query?: string) => 
@@ -165,8 +192,15 @@ export const productsAPI = {
   
   getPurchasedProducts: () => 
     useMockData 
-      ? Promise.resolve({ data: mockProducts.slice(0, 2) })
-      : api.get<Product[]>('/products/purchased'),
+      ? Promise.resolve({ 
+          data: mockProducts.slice(0, 2).map(product => ({
+            date_time: new Date().toISOString(),
+            buyer_id: 1,
+            product_id: parseInt(product.id!),
+            Product: product
+          }))
+        })
+      : api.get<PurchaseRecord[]>('/products/purchased'),
   
   getSellingProducts: () => 
     useMockData 

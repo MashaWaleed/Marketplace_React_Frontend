@@ -32,14 +32,14 @@ interface AddProductFormData {
   name: string;
   description: string;
   price: number;
-  image: string;
+  picture_url: string;
 }
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required'),
   description: yup.string().required('Description is required'),
   price: yup.number().required('Price is required').positive('Price must be positive'),
-  image: yup.string().required('Image URL is required'),
+  picture_url: yup.string().required('Image URL is required'),
 });
 
 export default function AddProduct() {
@@ -61,8 +61,8 @@ export default function AddProduct() {
       const response = await productsAPI.createProduct({
         name: data.name,
         description: data.description,
-        price: data.price,
-        picture_url: data.image,
+        price: Number(data.price),
+        picture_url: data.picture_url,
       });
       return response;
     },
@@ -142,14 +142,14 @@ export default function AddProduct() {
                 )}
               </FormControl>
 
-              <FormControl isInvalid={!!errors.image}>
+              <FormControl isInvalid={!!errors.picture_url}>
                 <FormLabel>Image URL</FormLabel>
                 <Input
-                  {...register('image')}
+                  {...register('picture_url')}
                   placeholder="Enter image URL"
                 />
-                {errors.image && (
-                  <Text color="red.500" fontSize="sm">{errors.image.message}</Text>
+                {errors.picture_url && (
+                  <Text color="red.500" fontSize="sm">{errors.picture_url.message}</Text>
                 )}
               </FormControl>
 

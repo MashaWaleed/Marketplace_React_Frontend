@@ -40,6 +40,13 @@ interface AnalyticsData {
   total_purchased_products: number;
 }
 
+interface PurchaseRecord {
+  date_time: string;
+  buyer_id: number;
+  product_id: number;
+  Product: Product;
+}
+
 const AnalyticsPanel = () => {
   const { data: analyticsResponse, isLoading: isAnalyticsLoading } = useQuery<ApiResponse<AnalyticsData>>({
     queryKey: ['analytics'],
@@ -274,7 +281,7 @@ export default function Profile() {
     },
   });
 
-  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery<ApiResponse<Product[]>>({
+  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery<ApiResponse<PurchaseRecord[]>>({
     queryKey: ['purchased-products'],
     queryFn: async () => {
       const response = await productsAPI.getPurchasedProducts();
@@ -282,11 +289,7 @@ export default function Profile() {
     },
   });
 
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery<ApiResponse<{
-    total_products: number;
-    total_selling_products: number;
-    total_purchased_products: number;
-  }>>({
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery<ApiResponse<AnalyticsData>>({
     queryKey: ['analytics'],
     queryFn: async () => {
       const response = await productsAPI.getAnalytics();
@@ -378,10 +381,10 @@ export default function Profile() {
                     }}
                     gap={6}
                   >
-                    {purchasedProducts.map((product: Product) => (
+                    {purchasedProducts.map((record: PurchaseRecord) => (
                       <ProductCard
-                        key={product.id}
-                        product={product}
+                        key={record.Product.id}
+                        product={record.Product}
                         showBuyButton={false}
                       />
                     ))}
