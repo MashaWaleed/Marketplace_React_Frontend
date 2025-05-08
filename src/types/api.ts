@@ -22,7 +22,7 @@ export interface Wallet {
 export interface Transaction {
   id: string;
   amount: number;
-  date: string;
+  timestamp: number;
   credit: number;
   debit: number;
   done: boolean;

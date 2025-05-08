@@ -144,7 +144,7 @@ export default function Wallet() {
               <Tbody>
                 {transactionsData?.map((transaction: Transaction) => (
                   <Tr key={transaction.id}>
-                    <Td>{new Date(transaction.date).toLocaleDateString('en-US', {
+                    <Td>{new Date(transaction.timestamp * 1000).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',

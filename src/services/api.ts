@@ -59,7 +59,7 @@ const mockTransactions: Transaction[] = [
   {
     id: '1',
     amount: 500.00,
-    date: new Date('2024-03-15T10:00:00Z').toISOString(),
+    timestamp: Math.floor(Date.now() / 1000) - 86400, // 1 day ago
     credit: 500.00,
     debit: 0,
     done: true,
@@ -67,7 +67,7 @@ const mockTransactions: Transaction[] = [
   {
     id: '2',
     amount: 200.00,
-    date: new Date('2024-03-16T15:30:00Z').toISOString(),
+    timestamp: Math.floor(Date.now() / 1000) - 43200, // 12 hours ago
     credit: 0,
     debit: 200.00,
     done: true,
