@@ -88,7 +88,7 @@ export default function ProductCard({
 
           <HStack justify="space-between" align="center">
             <Badge colorScheme="green" fontSize="md" px={2} py={1}>
-              ${product.price.toFixed(2)}
+              ${product.price?.toFixed(2) ?? '0.00'}
             </Badge>
 
             {showBuyButton && (
