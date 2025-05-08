@@ -55,11 +55,16 @@ const AnalyticsPanel = () => {
     return <Text>Loading analytics...</Text>;
   }
 
-  const analytics = analyticsResponse?.data;
+  const analytics = analyticsResponse?.data || {
+    total_products: 0,
+    total_selling_products: 0,
+    total_purchased_products: 0
+  };
+
   const chartData = [
-    { name: 'Total Products', value: analytics?.total_products || 0 },
-    { name: 'Selling', value: analytics?.total_selling_products || 0 },
-    { name: 'Purchased', value: analytics?.total_purchased_products || 0 },
+    { name: 'Total Products', value: analytics.total_products },
+    { name: 'Selling', value: analytics.total_selling_products },
+    { name: 'Purchased', value: analytics.total_purchased_products },
   ];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
@@ -76,7 +81,7 @@ const AnalyticsPanel = () => {
           shadow="sm"
         >
           <StatLabel fontSize="lg">Total Products</StatLabel>
-          <StatNumber fontSize="3xl">{analytics?.total_products || 0}</StatNumber>
+          <StatNumber fontSize="3xl">{analytics.total_products}</StatNumber>
           <StatHelpText>All products in the marketplace</StatHelpText>
         </Stat>
         <Stat
@@ -88,7 +93,7 @@ const AnalyticsPanel = () => {
           shadow="sm"
         >
           <StatLabel fontSize="lg">Selling Products</StatLabel>
-          <StatNumber fontSize="3xl">{analytics?.total_selling_products || 0}</StatNumber>
+          <StatNumber fontSize="3xl">{analytics.total_selling_products}</StatNumber>
           <StatHelpText>Products you're currently selling</StatHelpText>
         </Stat>
         <Stat
@@ -100,7 +105,7 @@ const AnalyticsPanel = () => {
           shadow="sm"
         >
           <StatLabel fontSize="lg">Purchased Products</StatLabel>
-          <StatNumber fontSize="3xl">{analytics?.total_purchased_products || 0}</StatNumber>
+          <StatNumber fontSize="3xl">{analytics.total_purchased_products}</StatNumber>
           <StatHelpText>Products you've purchased</StatHelpText>
         </Stat>
       </SimpleGrid>
