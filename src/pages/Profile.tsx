@@ -29,6 +29,7 @@ import type { Product } from '../types/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import React from 'react';
 import { useAuthStore } from '../store/authStore';
+import SellingProductCard from '../components/SellingProductCard';
 
 interface ApiResponse<T> {
   data: T;
@@ -349,22 +350,11 @@ export default function Profile() {
                   {sellingProducts.length === 0 ? (
                     <Text textAlign="center">No products for sale</Text>
                   ) : (
-                    <Grid
-                      templateColumns={{
-                        base: '1fr',
-                        md: 'repeat(2, 1fr)',
-                        lg: 'repeat(3, 1fr)',
-                      }}
-                      gap={6}
-                    >
-                      {sellingProducts.map((product: Product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          showBuyButton={false}
-                        />
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+                      {sellingProducts?.map((product) => (
+                        <SellingProductCard key={product.id} product={product} />
                       ))}
-                    </Grid>
+                    </SimpleGrid>
                   )}
                 </VStack>
               </TabPanel>
