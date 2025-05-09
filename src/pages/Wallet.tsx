@@ -152,10 +152,10 @@ export default function Wallet() {
                       minute: '2-digit'
                     })}</Td>
                     <Td>${transaction.amount.toFixed(2)}</Td>
-                    <Td>{transaction.credit > 0 ? 'Credit' : 'Debit'}</Td>
+                    <Td>{transaction.amount > 0 ? 'Debit' : 'Credit'}</Td>
                     <Td>
-                      <Badge colorScheme={transaction.done ? 'green' : 'yellow'}>
-                        {transaction.done ? 'Completed' : 'Pending'}
+                      <Badge colorScheme="green">
+                        Done
                       </Badge>
                     </Td>
                   </Tr>
