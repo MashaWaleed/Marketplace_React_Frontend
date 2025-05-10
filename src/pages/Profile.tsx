@@ -22,11 +22,11 @@ import {
 } from '@chakra-ui/react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { productsAPI, authAPI } from '../services/api';
+import { productsAPI, authAPI, walletAPI } from '../services/api';
 import Navigation from '../components/Navigation';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import SellingProductCard from '../components/SellingProductCard';
@@ -38,6 +38,7 @@ interface ApiResponse<T> {
 interface AnalyticsData {
   total_products: number;
   total_selling_products: number;
+  total_sold_products: number;
   total_purchased_products: number;
 }
 
@@ -52,23 +53,44 @@ const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
+  const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery({
+    queryKey: ['profile-transactions'],
+    queryFn: async () => {
+      const response = await walletAPI.getTransactions();
+      return response.data;
+    },
+  });
+
   const analytics = data || {
     total_products: 0,
     total_selling_products: 0,
-    total_purchased_products: 0
+    total_sold_products: 0,
+    total_purchased_products: 0,
   };
 
   const chartData = [
-    { name: 'Total Products', value: analytics.total_products },
     { name: 'Selling', value: analytics.total_selling_products },
+    { name: 'Sold', value: analytics.total_sold_products },
     { name: 'Purchased', value: analytics.total_purchased_products },
   ];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+  const barChartData = [
+    { name: 'Total Products', value: analytics.total_products },
+    { name: 'Selling', value: analytics.total_selling_products },
+    { name: 'Sold', value: analytics.total_sold_products },
+    { name: 'Purchased', value: analytics.total_purchased_products },
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  const transactionData = (transactionsData || []).map(transaction => ({
+    date: new Date(transaction.timestamp * 1000).toLocaleDateString(),
+    amount: transaction.amount,
+  }));
 
   return (
     <Box>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
+      <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6} mb={8}>
         <Stat
           p={4}
           bg={bgColor}
@@ -101,13 +123,25 @@ const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
           borderColor={borderColor}
           shadow="sm"
         >
+          <StatLabel fontSize="lg">Sold Products</StatLabel>
+          <StatNumber fontSize="3xl">{analytics.total_sold_products}</StatNumber>
+          <StatHelpText>Products you've sold</StatHelpText>
+        </Stat>
+        <Stat
+          p={4}
+          bg={bgColor}
+          borderRadius="lg"
+          borderWidth="1px"
+          borderColor={borderColor}
+          shadow="sm"
+        >
           <StatLabel fontSize="lg">Purchased Products</StatLabel>
           <StatNumber fontSize="3xl">{analytics.total_purchased_products}</StatNumber>
           <StatHelpText>Products you've purchased</StatHelpText>
         </Stat>
       </SimpleGrid>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={8}>
         <Box
           p={4}
           bg={bgColor}
@@ -135,6 +169,7 @@ const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
                 ))}
               </Pie>
               <Tooltip />
+              <Legend />
             </PieChart>
           </ResponsiveContainer>
         </Box>
@@ -150,20 +185,47 @@ const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
         >
           <Heading size="md" mb={4}>Product Statistics</Heading>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={barChartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Bar dataKey="value" fill="#8884d8">
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {barChartData.map((entry, index) => (
+                  <Cell key={`cell-bar-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Box>
       </SimpleGrid>
+
+      <Box
+        p={4}
+        bg={bgColor}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+        shadow="sm"
+        height="400px"
+        mt={8}
+      >
+        <Heading size="md" mb={4}>Transaction Timeline</Heading>
+        {isTransactionsLoading ? (
+          <Text>Loading transaction data...</Text>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={transactionData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="amount" stroke="#8884d8" name="Amount" />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </Box>
     </Box>
   );
 };

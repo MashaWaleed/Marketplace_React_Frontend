@@ -7,19 +7,17 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
-  StatArrow,
   useColorModeValue,
   VStack,
   Text,
-  HStack,
 } from '@chakra-ui/react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { productsAPI, walletAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import type { AnalyticsData, Transaction } from '../types/api';
+import type { AnalyticsData } from '../types/api';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 export default function Analytics() {
   const bgColor = useColorModeValue('white', 'gray.700');
@@ -61,17 +59,13 @@ export default function Analytics() {
 
   const transactions = transactionsData || [];
 
-  // Sort transactions by timestamp
-  const sortedTransactions = [...transactions].sort((a, b) => a.timestamp - b.timestamp);
-
-  // Prepare transaction data for the timeline
-  const transactionData = sortedTransactions.map(transaction => ({
+  // Prepare transaction data
+  const transactionData = transactions.map(transaction => ({
     date: new Date(transaction.timestamp * 1000).toLocaleDateString(),
     amount: transaction.amount,
-    type: transaction.amount > 0 ? 'Credit' : 'Debit',
   }));
 
-  // Prepare pie chart data (excluding total products)
+  // Prepare pie chart data
   const chartData = [
     { name: 'Selling', value: analytics.total_selling_products },
     { name: 'Sold', value: analytics.total_sold_products },
@@ -97,10 +91,6 @@ export default function Analytics() {
                 >
                   <StatLabel>Total Products</StatLabel>
                   <StatNumber>{analytics.total_products}</StatNumber>
-                  <StatHelpText>
-                    <StatArrow type="increase" />
-                    All products
-                  </StatHelpText>
                 </Stat>
 
                 <Stat
@@ -112,10 +102,6 @@ export default function Analytics() {
                 >
                   <StatLabel>Selling Products</StatLabel>
                   <StatNumber>{analytics.total_selling_products}</StatNumber>
-                  <StatHelpText>
-                    <StatArrow type="increase" />
-                    Currently listed
-                  </StatHelpText>
                 </Stat>
 
                 <Stat
@@ -127,10 +113,6 @@ export default function Analytics() {
                 >
                   <StatLabel>Sold Products</StatLabel>
                   <StatNumber>{analytics.total_sold_products}</StatNumber>
-                  <StatHelpText>
-                    <StatArrow type="increase" />
-                    Successfully sold
-                  </StatHelpText>
                 </Stat>
 
                 <Stat
@@ -142,16 +124,12 @@ export default function Analytics() {
                 >
                   <StatLabel>Purchased Products</StatLabel>
                   <StatNumber>{analytics.total_purchased_products}</StatNumber>
-                  <StatHelpText>
-                    <StatArrow type="increase" />
-                    Your purchases
-                  </StatHelpText>
                 </Stat>
               </SimpleGrid>
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                <Box height="400px" mt={4}>
-                  <Heading size="md" mb={4}>Product Distribution</Heading>
+                <Box height="400px">
+                  <Text fontSize="xl" mb={4}>Product Distribution</Text>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -174,30 +152,20 @@ export default function Analytics() {
                   </ResponsiveContainer>
                 </Box>
 
-                <Box height="400px" mt={4}>
-                  <Heading size="md" mb={4}>Transaction Timeline</Heading>
+                <Box height="400px">
+                  <Text fontSize="xl" mb={4}>Transaction Timeline</Text>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={transactionData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="date" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
+                      <XAxis dataKey="date" />
                       <YAxis />
-                      <Tooltip 
-                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Amount']}
-                        labelFormatter={(label) => `Date: ${label}`}
-                      />
+                      <Tooltip />
                       <Legend />
                       <Line 
                         type="monotone" 
                         dataKey="amount" 
                         stroke="#8884d8" 
                         name="Amount"
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 8 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
