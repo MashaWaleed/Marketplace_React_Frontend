@@ -54,6 +54,7 @@ export default function Login() {
       setAuth(response.data.user, response.data.token);
       toast({
         title: 'Login successful',
+        description: 'Welcome back!',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -61,9 +62,10 @@ export default function Login() {
       navigate('/');
     },
     onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
       toast({
         title: 'Login failed',
-        description: error.response?.data?.message || error.message,
+        description: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,
