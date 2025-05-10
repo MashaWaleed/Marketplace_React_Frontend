@@ -138,7 +138,7 @@ export default function ProductCard({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to purchase {product.name} for ${product.price.toFixed(2)}?
+              Are you sure you want to purchase {product.name} for ${Number(product.price).toFixed(2)}?
             </AlertDialogBody>
 
             <AlertDialogFooter>

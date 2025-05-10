@@ -27,7 +27,7 @@ import Navigation from '../components/Navigation';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../types/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import SellingProductCard from '../components/SellingProductCard';
 
@@ -48,23 +48,11 @@ interface PurchaseRecord {
   Product: Product;
 }
 
-const AnalyticsPanel = () => {
-  const { data: analyticsResponse, isLoading: isAnalyticsLoading } = useQuery<ApiResponse<AnalyticsData>>({
-    queryKey: ['analytics'],
-    queryFn: async () => {
-      const response = await productsAPI.getAnalytics();
-      return response;
-    }
-  });
-
+const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  if (isAnalyticsLoading) {
-    return <Text>Loading analytics...</Text>;
-  }
-
-  const analytics = analyticsResponse?.data || {
+  const analytics = data || {
     total_products: 0,
     total_selling_products: 0,
     total_purchased_products: 0
@@ -274,36 +262,46 @@ const ExternalTokenPanel = () => {
 export default function Profile() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { data: sellingData, isLoading: isLoadingSelling } = useQuery<ApiResponse<Product[]>>({
+  const toast = useToast();
+  const [activeTab, setActiveTab] = useState(0);
+
+  const { data: sellingData, isLoading: isLoadingSelling } = useQuery({
     queryKey: ['selling-products'],
     queryFn: async () => {
       const response = await productsAPI.getSellingProducts();
-      return response;
+      return response.data;
     },
   });
 
-  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery<ApiResponse<PurchaseRecord[]>>({
+  const { data: purchasedData, isLoading: isLoadingPurchased } = useQuery({
     queryKey: ['purchased-products'],
     queryFn: async () => {
       const response = await productsAPI.getPurchasedProducts();
-      return response;
+      return response.data;
     },
   });
 
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery<ApiResponse<AnalyticsData>>({
+  const { data: soldData, isLoading: isLoadingSold } = useQuery({
+    queryKey: ['sold-products'],
+    queryFn: async () => {
+      const response = await productsAPI.getSoldProducts();
+      return response.data;
+    },
+  });
+
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['analytics'],
     queryFn: async () => {
       const response = await productsAPI.getAnalytics();
-      return response;
+      return response.data;
     },
   });
 
-  // Extract data from the response
-  const sellingProducts = sellingData?.data || [];
-  const purchasedProducts = purchasedData?.data || [];
-  const analytics = analyticsData?.data;
+  const sellingProducts = sellingData || [];
+  const purchasedProducts = purchasedData || [];
+  const soldProducts = soldData || [];
 
-  if (isLoadingSelling || isLoadingPurchased || isLoadingAnalytics) {
+  if (isLoadingSelling || isLoadingPurchased || isLoadingSold || isLoadingAnalytics) {
     return (
       <>
         <Navigation />
@@ -328,9 +326,10 @@ export default function Profile() {
             )}
           </VStack>
 
-          <Tabs isFitted variant="enclosed">
+          <Tabs isFitted variant="enclosed" onChange={(index) => setActiveTab(index)}>
             <TabList mb="1em">
               <Tab>Selling</Tab>
+              <Tab>Sold</Tab>
               <Tab>Purchased</Tab>
               <Tab>Analytics</Tab>
               <Tab>External Token</Tab>
@@ -347,11 +346,13 @@ export default function Profile() {
                     Add New Product
                   </Button>
 
-                  {sellingProducts.length === 0 ? (
+                  {isLoadingSelling ? (
+                    <Text textAlign="center">Loading...</Text>
+                  ) : sellingProducts.length === 0 ? (
                     <Text textAlign="center">No products for sale</Text>
                   ) : (
                     <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                      {sellingProducts?.map((product) => (
+                      {sellingProducts.map((product) => (
                         <SellingProductCard key={product.id} product={product} />
                       ))}
                     </SimpleGrid>
@@ -360,30 +361,39 @@ export default function Profile() {
               </TabPanel>
 
               <TabPanel>
-                {purchasedProducts.length === 0 ? (
-                  <Text textAlign="center">No purchased products</Text>
+                {isLoadingSold ? (
+                  <Text textAlign="center">Loading...</Text>
+                ) : soldProducts.length === 0 ? (
+                  <Text textAlign="center">No sold products</Text>
                 ) : (
-                  <Grid
-                    templateColumns={{
-                      base: '1fr',
-                      md: 'repeat(2, 1fr)',
-                      lg: 'repeat(3, 1fr)',
-                    }}
-                    gap={6}
-                  >
-                    {purchasedProducts.map((record: PurchaseRecord) => (
-                      <ProductCard
-                        key={record.Product.id}
-                        product={record.Product}
-                        showBuyButton={false}
-                      />
+                  <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+                    {soldProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} showBuyButton={false} />
                     ))}
-                  </Grid>
+                  </SimpleGrid>
                 )}
               </TabPanel>
 
               <TabPanel>
-                <AnalyticsPanel />
+                {isLoadingPurchased ? (
+                  <Text textAlign="center">Loading...</Text>
+                ) : purchasedProducts.length === 0 ? (
+                  <Text textAlign="center">No purchased products</Text>
+                ) : (
+                  <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+                    {purchasedProducts.map((record) => (
+                      <ProductCard key={record.Product.id} product={record.Product} showBuyButton={false} />
+                    ))}
+                  </SimpleGrid>
+                )}
+              </TabPanel>
+
+              <TabPanel>
+                {isLoadingAnalytics ? (
+                  <Text textAlign="center">Loading...</Text>
+                ) : (
+                  <AnalyticsPanel data={analyticsData} />
+                )}
               </TabPanel>
 
               <TabPanel>

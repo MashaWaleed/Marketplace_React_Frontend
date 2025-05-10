@@ -170,14 +170,24 @@ export const productsAPI = {
               )
             : mockProducts 
         })
-      : api.get<Product[]>('/products', { params: { q: query } }),
+      : api.get<Product[]>('/products', { params: { q: query } }).then(response => ({
+          data: response.data.map(product => ({
+            ...product,
+            price: Number(product.price)
+          }))
+        })),
   
   getProduct: (id: string) => 
     useMockData 
       ? Promise.resolve({ 
           data: mockProducts.find(p => p.id === id) || mockProducts[0] 
         })
-      : api.get<Product>(`/products/${id}`),
+      : api.get<Product>(`/products/${id}`).then(response => ({
+          data: {
+            ...response.data,
+            price: Number(response.data.price)
+          }
+        })),
   
   createProduct: (product: Omit<Product, 'id'>) => 
     useMockData 
@@ -203,15 +213,31 @@ export const productsAPI = {
             date_time: new Date().toISOString(),
             buyer_id: 1,
             product_id: parseInt(product.id!),
-            Product: product
+            Product: {
+              ...product,
+              price: Number(product.price)
+            }
           }))
         })
-      : api.get<PurchaseRecord[]>('/products/purchased'),
+      : api.get<PurchaseRecord[]>('/products/purchased').then(response => ({
+          data: response.data.map(record => ({
+            ...record,
+            Product: {
+              ...record.Product,
+              price: Number(record.Product.price)
+            }
+          }))
+        })),
   
   getSellingProducts: () => 
     useMockData 
       ? Promise.resolve({ data: mockProducts.slice(2) })
-      : api.get<Product[]>('/products/selling'),
+      : api.get<Product[]>('/products/selling').then(response => ({
+          data: response.data.map(product => ({
+            ...product,
+            price: Number(product.price)
+          }))
+        })),
   
   buyProduct: (id: string) => 
     useMockData 
@@ -228,6 +254,22 @@ export const productsAPI = {
           } 
         })
       : api.get('/products/analytics'),
+  
+  getSoldProducts: () => 
+    useMockData 
+      ? Promise.resolve({ 
+          data: mockProducts.slice(0, 2).map(product => ({
+            ...product,
+            price: Number(product.price),
+            sold_at: new Date().toISOString()
+          }))
+        })
+      : api.get<Product[]>('/products/sold').then(response => ({
+          data: response.data.map(product => ({
+            ...product,
+            price: Number(product.price)
+          }))
+        })),
 };
 
 export const walletAPI = {
