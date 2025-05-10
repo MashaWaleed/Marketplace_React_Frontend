@@ -75,7 +75,7 @@ const mockTransactions: Transaction[] = [
 ];
 
 // Use mock data instead of making API calls
-const useMockData = false;
+const useMockData = true;
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -61,8 +61,11 @@ export default function Analytics() {
 
   const transactions = transactionsData || [];
 
+  // Sort transactions by timestamp
+  const sortedTransactions = [...transactions].sort((a, b) => a.timestamp - b.timestamp);
+
   // Prepare transaction data for the timeline
-  const transactionData = transactions.map(transaction => ({
+  const transactionData = sortedTransactions.map(transaction => ({
     date: new Date(transaction.timestamp * 1000).toLocaleDateString(),
     amount: transaction.amount,
     type: transaction.amount > 0 ? 'Credit' : 'Debit',
@@ -176,9 +179,17 @@ export default function Analytics() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={transactionData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
+                      <XAxis 
+                        dataKey="date" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip 
+                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Amount']}
+                        labelFormatter={(label) => `Date: ${label}`}
+                      />
                       <Legend />
                       <Line 
                         type="monotone" 
