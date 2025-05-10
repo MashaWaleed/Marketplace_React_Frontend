@@ -51,6 +51,7 @@ export interface AnalyticsData {
   total_products: number;
   total_selling_products: number;
   total_purchased_products: number;
+  total_sold_products: number;
 }
 
 export interface AddMoneyResponse {

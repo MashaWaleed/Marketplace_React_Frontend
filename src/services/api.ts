@@ -98,6 +98,12 @@ export const getErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
     return error.response.data.message;
   }
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+  if (error.response?.data?.detail) {
+    return error.response.data.detail;
+  }
   if (error.message) {
     return error.message;
   }
@@ -237,7 +243,11 @@ export const walletAPI = {
             payment_url: 'mock-session-id-' + Math.random().toString(36).substring(2, 15)
           } 
         })
-      : api.post<AddMoneyResponse>('/e-wallet', { amount }),
+      : api.post<AddMoneyResponse>('/e-wallet', { 
+          amount,
+          success_url: `${window.location.origin}/wallet`,
+          cancel_url: `${window.location.origin}/wallet`,
+        }),
   
   getTransactions: () => 
     useMockData 
