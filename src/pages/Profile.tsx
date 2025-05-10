@@ -83,10 +83,13 @@ const AnalyticsPanel = ({ data }: { data: AnalyticsData }) => {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  const transactionData = (transactionsData || []).map(transaction => ({
-    date: new Date(transaction.timestamp * 1000).toLocaleDateString(),
-    amount: transaction.amount,
-  }));
+  const transactionData = (transactionsData || [])
+    .slice()
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map(transaction => ({
+      date: new Date(transaction.timestamp * 1000).toLocaleDateString(),
+      amount: transaction.amount,
+    }));
 
   return (
     <Box>
