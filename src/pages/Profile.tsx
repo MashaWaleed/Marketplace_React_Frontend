@@ -382,7 +382,14 @@ export default function Profile() {
                 ) : (
                   <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                     {purchasedProducts.map((record) => (
-                      <ProductCard key={record.Product.id} product={record.Product} showBuyButton={false} />
+                      <ProductCard 
+                        key={record.Product.id} 
+                        product={{
+                          ...record.Product,
+                          id: record.product_id.toString()
+                        }} 
+                        showBuyButton={false} 
+                      />
                     ))}
                   </SimpleGrid>
                 )}

@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { productsAPI } from '../services/api';
+import { productsAPI, getErrorMessage } from '../services/api';
 import Navigation from '../components/Navigation';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -56,39 +56,37 @@ export default function AddProduct() {
     resolver: yupResolver(schema),
   });
 
-  const addProductMutation = useMutation<ApiResponse<Product>, Error, AddProductFormData>({
-    mutationFn: async (data) => {
-      const response = await productsAPI.createProduct({
-        name: data.name,
-        description: data.description,
-        price: Number(data.price),
-        picture_url: data.picture_url,
-      });
+  const createProductMutation = useMutation({
+    mutationFn: async (data: AddProductFormData) => {
+      const response = await productsAPI.createProduct(data);
       return response;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['selling-products'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast({
-        title: 'Product added successfully',
+        title: 'Product created',
+        description: 'Your product has been created successfully.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
       navigate('/profile');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error adding product',
-        description: error.message,
+        title: 'Creation failed',
+        description: getErrorMessage(error),
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     },
   });
 
   const onSubmit = (data: AddProductFormData) => {
-    addProductMutation.mutate(data);
+    createProductMutation.mutate(data);
   };
 
   return (
@@ -157,7 +155,7 @@ export default function AddProduct() {
                 type="submit"
                 colorScheme="blue"
                 width="full"
-                isLoading={addProductMutation.isPending}
+                isLoading={createProductMutation.isPending}
               >
                 Add Product
               </Button>

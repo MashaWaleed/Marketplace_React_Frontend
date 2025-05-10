@@ -60,13 +60,16 @@ export default function ProductCard({
         duration: 3000,
         isClosable: true,
       });
+      if (onBuySuccess) {
+        onBuySuccess();
+      }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error',
+        title: 'Purchase failed',
         description: getErrorMessage(error),
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     },

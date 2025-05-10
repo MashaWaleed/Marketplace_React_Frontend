@@ -104,6 +104,16 @@ export const getErrorMessage = (error: any): string => {
   if (error.response?.data?.detail) {
     return error.response.data.detail;
   }
+  if (error.response?.data?.errors) {
+    // Handle array of errors
+    if (Array.isArray(error.response.data.errors)) {
+      return error.response.data.errors.join(', ');
+    }
+    // Handle object of errors
+    if (typeof error.response.data.errors === 'object') {
+      return Object.values(error.response.data.errors).join(', ');
+    }
+  }
   if (error.message) {
     return error.message;
   }

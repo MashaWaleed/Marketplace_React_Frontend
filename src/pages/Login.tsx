@@ -45,14 +45,13 @@ export default function Login() {
     resolver: yupResolver(schema),
   });
 
-  const loginMutation = useMutation<ApiResponse<AuthResponse>, Error, LoginCredentials>({
-    mutationFn: async (credentials) => {
-      const response = await authAPI.login(credentials);
+  const loginMutation = useMutation({
+    mutationFn: async (data: LoginCredentials) => {
+      const response = await authAPI.login(data);
       return response;
     },
     onSuccess: (response) => {
-      const { user, token } = response.data;
-      setAuth(user, token);
+      setAuth(response.data.user, response.data.token);
       toast({
         title: 'Login successful',
         status: 'success',
@@ -61,12 +60,12 @@ export default function Login() {
       });
       navigate('/');
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: 'Login failed',
-        description: getErrorMessage(error),
+        description: error.response?.data?.message || error.message,
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     },

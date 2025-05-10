@@ -74,55 +74,61 @@ export default function SellingProductCard({ product }: SellingProductCardProps)
     },
   });
 
-  const updateMutation = useMutation<ApiResponse<Product>, Error, UpdateProductFormData>({
-    mutationFn: async (data) => {
-      const response = await productsAPI.updateProduct(product.id!, {
-        ...product,
-        ...data,
-      });
+  const updateMutation = useMutation({
+    mutationFn: async (data: UpdateProductFormData) => {
+      const response = await productsAPI.updateProduct(product.id!, data);
       return response;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['selling-products'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast({
-        title: 'Product updated successfully',
+        title: 'Product updated',
+        description: 'Your product has been updated successfully.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error updating product',
+        title: 'Update failed',
         description: getErrorMessage(error),
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     },
   });
 
-  const deleteMutation = useMutation<ApiResponse<{ success: boolean }>, Error, void>({
+  const deleteMutation = useMutation({
     mutationFn: async () => {
       const response = await productsAPI.deleteProduct(product.id!);
       return response;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['selling-products'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast({
-        title: 'Product deleted successfully',
+        title: 'Product deleted',
+        description: 'Your product has been deleted successfully.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
+      onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error deleting product',
+        title: 'Delete failed',
         description: getErrorMessage(error),
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     },
